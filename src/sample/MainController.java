@@ -42,7 +42,8 @@ public class MainController {
         File file = chooser.showOpenDialog(openFile.getParentPopup().getScene().getWindow());
         try {
             root.getChildren().remove(1);
-        } catch (Exception exception) {}
+        } catch (Exception exception) {
+        }
 
         showContent(file);
     }
@@ -51,16 +52,16 @@ public class MainController {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/content.fxml"));
             root.getChildren().add(loader.load());
-            ContentController contentController = (ContentController) loader.getController();
+            ContentController contentController = loader.getController();
 
-
-
+            HashMap<String, Double[]> data = getData(file);
+            contentController.setDeptData(data.get("DEPT"));
             for (String s : getMethods(file)) {
                 if (s.equals("DEPT")) continue;
-                contentController.addMethodPane(s);
+                Double[] methodData = data.get(s);
+                contentController.addMethodPane(s, methodData);
                 updateMethodMenu(s, contentController);
             }
-            contentController.setData(getData(file));
 
         } catch (IOException ioException) {
             ioException.printStackTrace();
@@ -111,7 +112,7 @@ public class MainController {
                 if (s.startsWith("#")) continue;
                 if (flag) {
                     if (s.matches("^~[^C].+")) break;
-                    if(s.toLowerCase().matches("^dept.*")) s = "DEPT";
+                    if (s.toLowerCase().matches("^dept.*")) s = "DEPT";
                     list.add(s.split("\\.")[0].trim());
                 }
                 if (s.startsWith("~C")) {
