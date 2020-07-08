@@ -36,14 +36,16 @@ public class MethodChart {
     public void drawChart(AnchorPane anchorPane) {
         Double lowerDepth = depthData[0];
         Double minXValue = getMinXValue();
-        Double lastXPoint = (methodData[0] - minXValue) / XPointDivider;
+        Double maxXValue = getMaxXValue();
+        if(minXValue==maxXValue) minXValue = 0.0;
+        Double lastXPoint = (methodData[0] - minXValue) / ((maxXValue - minXValue) / (150*XPointDivider));
         Double lastYPoint = 0.0;
 
 
         for (int i = 0; i < depthData.length; i++) {
             Double currentDepth = depthData[i];
             Double currentYPoint = (currentDepth - lowerDepth) * depthMultiplier;
-            Double currentXPoint = (methodData[i] - minXValue) / XPointDivider;
+            Double currentXPoint = (methodData[i] - minXValue) / ((maxXValue - minXValue) / (150*XPointDivider));
             if (currentXPoint < 0) currentXPoint = 0.0;
 
             anchorPane.getChildren().add(new Line(lastXPoint, lastYPoint, currentXPoint, currentYPoint));
@@ -52,15 +54,29 @@ public class MethodChart {
         }
     }
 
-    private Double getMinXValue(){
+    private Double getMinXValue() {
         Double minXValue = Double.MAX_VALUE;
 
-        for(Double xValue:  methodData){
-            if(xValue<0) continue;
-            if(minXValue>xValue) minXValue = xValue;
+        for (Double xValue : methodData) {
+            if (xValue < 0) continue;
+            if (minXValue > xValue) minXValue = xValue;
         }
 
         return minXValue;
+    }
+
+    private Double getMaxXValue() {
+        Double maxXValue = 0.0;
+
+        for (Double xValue : methodData) {
+            if (maxXValue < xValue) maxXValue = xValue;
+        }
+
+        return maxXValue;
+    }
+
+    public double getWidth(){
+        return 150*XPointDivider;
     }
 
 

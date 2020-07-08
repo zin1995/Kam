@@ -108,12 +108,12 @@ public class MainController {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
             boolean flag = false;
             while (reader.ready()) {
-                String s = reader.readLine();
+                String s = reader.readLine().trim();
                 if (s.startsWith("#")) continue;
                 if (flag) {
                     if (s.matches("^~[^C].+")) break;
                     if (s.toLowerCase().matches("^dept.*")) s = "DEPT";
-                    list.add(s.split("\\.")[0].trim());
+                    list.add(s.split(":")[0].trim());
                 }
                 if (s.startsWith("~C")) {
                     flag = true;

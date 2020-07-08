@@ -1,7 +1,6 @@
 package sample;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -27,7 +26,7 @@ public class ContentController {
 
 
     private HashMap<String, Node[]> methodsPane = new HashMap<>();
-    Map<String, MethodChart> chartMap = new HashMap<>();
+    private HashMap<String, MethodChart> chartMap = new HashMap<>();
     private Double[] deptData;
     private int depthMultiplier = 10;
     private Double XPointDivider = 1.0;
@@ -40,6 +39,7 @@ public class ContentController {
 
     @FXML
     public void initialize() {
+        depthPane.setMinWidth(100);
         depthSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -53,69 +53,67 @@ public class ContentController {
     }
 
     public void deletePanel(String s){
-        splitPane.getItems().remove(methodsPane.get(s)[2]);
+        splitPane.getItems().remove(methodsPane.get(s)[0]);
     }
 
     public void restorePanel(String s){
-        splitPane.getItems().add(methodsPane.get(s)[2]);
+        splitPane.getItems().add(methodsPane.get(s)[0]);
     }
 
-
-    public void addMethodPane(String s, Double[] methodData) {
-        Node[] nodes = new Node[3];
-        MethodChart methodChart = new MethodChart(s, methodData, deptData, depthMultiplier, XPointDivider);
-        chartMap.put(s, methodChart);
-
-        VBox vBox = new VBox();
-        Slider slider = new Slider(0.001, 1, 1);
+    private void setSliderSettings(Slider slider, String methodName, VBox vBox, MethodChart methodChart){
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 XPointDivider = newValue.doubleValue();
-                chartMap.get(s).setXPointDivider(XPointDivider);
-                drawContentsMethodPanel(s);
+                chartMap.get(methodName).setXPointDivider(XPointDivider);
+                vBox.setMinWidth(methodChart.getWidth());
+                drawContentsMethodPanel(methodName);
             }
         });
-        setMaxSliderValue(slider, methodData);
-        Label label = new Label(s);
-        AnchorPane canvas = new AnchorPane();
-        canvas.setPrefWidth(100);
+    }
 
-        vBox.getChildren().add(slider);
-        vBox.getChildren().add(label);
-        vBox.getChildren().add(canvas);
-        vBox.setMinWidth(200);
-        vBox.setMaxWidth(200);
+    private void setLabelSettings(Label label){
         label.setAlignment(CENTER);
         label.setContentDisplay(ContentDisplay.CENTER);
         label.setMaxWidth(Double.MAX_VALUE);
+    }
+
+
+    public void addMethodPane(String methodName, Double[] methodData) {
+        Node[] nodes = new Node[3];
+        MethodChart methodChart = new MethodChart(methodName, methodData, deptData, depthMultiplier, XPointDivider);
+        chartMap.put(methodName, methodChart);
+
+        VBox vBox = new VBox();
+
+        Slider slider = new Slider(1, 10, 1);
+        setSliderSettings(slider, methodName, vBox, methodChart);
+
+        Label label = new Label(methodName);
+        setLabelSettings(label);
+
+        AnchorPane canvas = new AnchorPane();
+
         vBox.setVgrow(label, Priority.ALWAYS);
         vBox.setVgrow(canvas, Priority.ALWAYS);
+        vBox.getChildren().add(slider);
+        vBox.getChildren().add(label);
+        vBox.getChildren().add(canvas);
 
-        nodes[0] = canvas;
+        nodes[0] = vBox;
         nodes[1] = slider;
-        nodes[2] = vBox;
-        methodsPane.put(s, nodes);
+        nodes[2] = canvas;
+        methodsPane.put(methodName, nodes);
         splitPane.getItems().add(vBox);
+
         methodChart.drawChart(canvas);
     }
 
-    private void setMaxSliderValue(Slider slider, Double[] methodData){
-        Double maxDivider = slider.getMax();
-
-        for (int i = 0; i < methodData.length; i++) {
-            if (maxDivider < methodData[i] / 100) {
-                maxDivider = methodData[i] / 100;
-                slider.setMax(maxDivider);
-                slider.setMajorTickUnit(maxDivider);
-            }
-        }
-    }
 
     private void drawContentsMethodPanel(String methodName) {
-        AnchorPane anchorPane = (AnchorPane) methodsPane.get(methodName)[0];
+        AnchorPane anchorPane = (AnchorPane) methodsPane.get(methodName)[2];
         anchorPane.getChildren().clear();
 
         chartMap.get(methodName).drawChart(anchorPane);
