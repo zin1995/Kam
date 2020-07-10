@@ -132,21 +132,31 @@ public class ContentController {
         depthPane.getChildren().clear();
         Double lowerDepth = depthData[0];
 
-
         for (int i = 0; i < depthData.length; i++) {
             Double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier;
 
-            if (i % 10 == 0) {
-                depthPane.getChildren().add(new Line(0, currentYPoint, 10, currentYPoint));
-                Line line = new Line(0, currentYPoint, depthPane.getMaxWidth(), currentYPoint);
-                line.setStrokeWidth(0.1);
-                depthPane.getChildren().add(line);
-                depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
-            }
-            if (i % 5 == 0) {
+
+            Line line = new Line(0, currentYPoint, 2, currentYPoint);
+            line.setStrokeWidth(0.4);
+            depthPane.getChildren().add(line);
+
+            if (i % 5 == 0 && i % 10 != 0) {
                 depthPane.getChildren().add(new Line(0, currentYPoint, 5, currentYPoint));
             }
 
+            if (i % 10 == 0) {
+                depthPane.getChildren().add(new Line(0, currentYPoint, 10, currentYPoint));
+                Line line2 = new Line(0, currentYPoint, depthPane.getMaxWidth(), currentYPoint);
+                line2.setStrokeWidth(0.1);
+                depthPane.getChildren().add(line2);
+                if (depthMultiplier > 7) {
+                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
+                }
+                if (i % 20 == 0 && depthMultiplier <= 7 && depthMultiplier>2)
+                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
+                if (i % 100 == 0 && depthMultiplier <= 2)
+                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
+            }
         }
     }
 
