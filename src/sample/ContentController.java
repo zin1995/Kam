@@ -23,28 +23,37 @@ public class ContentController {
     AnchorPane depthPane;
     @FXML
     Slider depthSlider;
+    @FXML
+    ScrollPane depthScroll;
+    @FXML
+    ScrollPane methodScroll;
 
 
     private HashMap<String, Node[]> methodsPane = new HashMap<>();
     private HashMap<String, MethodChart> chartMap = new HashMap<>();
-    private Double[] deptData;
+    private Double[] depthData;
     private int depthMultiplier = 10;
     private Double XPointDivider = 1.0;
 
-    public void setDeptData(Double[] deptData) {
-        this.deptData = deptData;
+    public void setDepthData(Double[] depthData) {
+        this.depthData = depthData;
         drawContentsDepthPanel();
     }
 
 
     @FXML
     public void initialize() {
-        depthPane.setMinWidth(100);
+        methodScroll.vvalueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                depthScroll.setVvalue(newValue.doubleValue());
+            }
+        });
         depthSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 depthMultiplier = newValue.intValue();
-                for(MethodChart methodChart: chartMap.values()){
+                for (MethodChart methodChart : chartMap.values()) {
                     methodChart.setDepthMultiplier(depthMultiplier);
                 }
                 drawAllPanelsContent();
@@ -52,15 +61,15 @@ public class ContentController {
         });
     }
 
-    public void deletePanel(String s){
+    public void deletePanel(String s) {
         splitPane.getItems().remove(methodsPane.get(s)[0]);
     }
 
-    public void restorePanel(String s){
+    public void restorePanel(String s) {
         splitPane.getItems().add(methodsPane.get(s)[0]);
     }
 
-    private void setSliderSettings(Slider slider, String methodName, VBox vBox, MethodChart methodChart){
+    private void setSliderSettings(Slider slider, String methodName, AnchorPane anchorPane, MethodChart methodChart) {
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.valueProperty().addListener(new ChangeListener<Number>() {
@@ -68,13 +77,13 @@ public class ContentController {
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 XPointDivider = newValue.doubleValue();
                 chartMap.get(methodName).setXPointDivider(XPointDivider);
-                vBox.setMinWidth(methodChart.getWidth());
+                anchorPane.setMinWidth(methodChart.getWidth());
                 drawContentsMethodPanel(methodName);
             }
         });
     }
 
-    private void setLabelSettings(Label label){
+    private void setLabelSettings(Label label) {
         label.setAlignment(CENTER);
         label.setContentDisplay(ContentDisplay.CENTER);
         label.setMaxWidth(Double.MAX_VALUE);
@@ -83,18 +92,18 @@ public class ContentController {
 
     public void addMethodPane(String methodName, Double[] methodData) {
         Node[] nodes = new Node[3];
-        MethodChart methodChart = new MethodChart(methodName, methodData, deptData, depthMultiplier, XPointDivider);
+        MethodChart methodChart = new MethodChart(methodName, methodData, depthData, depthMultiplier, XPointDivider);
         chartMap.put(methodName, methodChart);
 
         VBox vBox = new VBox();
+        AnchorPane canvas = new AnchorPane();
 
         Slider slider = new Slider(1, 10, 1);
-        setSliderSettings(slider, methodName, vBox, methodChart);
+        setSliderSettings(slider, methodName, canvas, methodChart);
 
         Label label = new Label(methodName);
         setLabelSettings(label);
 
-        AnchorPane canvas = new AnchorPane();
 
         vBox.setVgrow(label, Priority.ALWAYS);
         vBox.setVgrow(canvas, Priority.ALWAYS);
@@ -121,34 +130,29 @@ public class ContentController {
 
     private void drawContentsDepthPanel() {
         depthPane.getChildren().clear();
-        Double lowerDepth = deptData[0];
-        int i = 0;
-        for (Double currentDepth : deptData) {
-            Double currentYPoint = (currentDepth - lowerDepth) * depthMultiplier;
+        Double lowerDepth = depthData[0];
 
-            //draw depth scale
-            if (depthMultiplier >=10) {
-                if(i==0 || i==10){
-                    depthPane.getChildren().addAll(new Line(0, currentYPoint, 10, currentYPoint));
-                    depthPane.getChildren().addAll(new Text(10, currentYPoint, currentDepth + ""));
-                }
-                if(i==5 || i == 15){
-                    depthPane.getChildren().addAll(new Line(0, currentYPoint, 5, currentYPoint));
-                }
-            } else {
-                if(i==0){
-                    depthPane.getChildren().addAll(new Line(0, currentYPoint, 10, currentYPoint));
-                    depthPane.getChildren().addAll(new Text(10, currentYPoint, currentDepth + ""));
-                }
+
+        for (int i = 0; i < depthData.length; i++) {
+            Double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier;
+
+            if (i % 10 == 0) {
+                depthPane.getChildren().add(new Line(0, currentYPoint, 10, currentYPoint));
+                Line line = new Line(0, currentYPoint, depthPane.getMaxWidth(), currentYPoint);
+                line.setStrokeWidth(0.1);
+                depthPane.getChildren().add(line);
+                depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
             }
-            i++;
-            if(i==20) i = 0;
+            if (i % 5 == 0) {
+                depthPane.getChildren().add(new Line(0, currentYPoint, 5, currentYPoint));
+            }
+
         }
     }
 
 
     private void drawAllPanelsContent() {
-        for (String methodName: methodsPane.keySet()) {
+        for (String methodName : methodsPane.keySet()) {
             drawContentsDepthPanel();
             drawContentsMethodPanel(methodName);
         }

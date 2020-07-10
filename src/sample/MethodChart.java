@@ -43,14 +43,20 @@ public class MethodChart {
 
 
         for (int i = 0; i < depthData.length; i++) {
-            Double currentDepth = depthData[i];
-            Double currentYPoint = (currentDepth - lowerDepth) * depthMultiplier;
+            Double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier;
             Double currentXPoint = (methodData[i] - minXValue) / ((maxXValue - minXValue) / (150*XPointDivider));
             if (currentXPoint < 0) currentXPoint = 0.0;
+
+            if(i%10==0){
+                Line line = new Line(0, currentYPoint, anchorPane.getWidth(), currentYPoint);
+                line.setStrokeWidth(0.1);
+                anchorPane.getChildren().add(line);
+            }
 
             anchorPane.getChildren().add(new Line(lastXPoint, lastYPoint, currentXPoint, currentYPoint));
             lastXPoint = currentXPoint;
             lastYPoint = currentYPoint;
+
         }
     }
 

@@ -55,7 +55,7 @@ public class MainController {
             ContentController contentController = loader.getController();
 
             HashMap<String, Double[]> data = getData(file);
-            contentController.setDeptData(data.get("DEPT"));
+            contentController.setDepthData(data.get("DEPT"));
             for (String s : getMethods(file)) {
                 if (s.equals("DEPT")) continue;
                 Double[] methodData = data.get(s);

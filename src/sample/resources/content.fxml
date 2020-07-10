@@ -1,27 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
 <AnchorPane maxHeight="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.ContentController">
     <children>
-        <ScrollPane cache="true" fitToHeight="true" fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-            <content>
-                <SplitPane fx:id="splitPane">
-               <items>
-                  <VBox  alignment="TOP_CENTER" maxWidth="100.0" prefHeight="200.0" prefWidth="100.0">
-                     <children>
-                        <Slider fx:id="depthSlider" majorTickUnit="10.0" min="1.0" minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0" />
-                        <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Глубина" textAlignment="CENTER" VBox.vgrow="ALWAYS" />
-                        <AnchorPane fx:id="depthPane" VBox.vgrow="ALWAYS" />
-                     </children>
-                  </VBox>
-               </items></SplitPane>
-            </content>
-        </ScrollPane>
+      <StackPane prefHeight="150.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+              <ScrollPane fx:id="methodScroll" cache="true" fitToHeight="true" fitToWidth="true">
+                  <content>
+                      <SplitPane fx:id="splitPane" nodeOrientation="LEFT_TO_RIGHT" />
+                  </content>
+               <StackPane.margin>
+                  <Insets left="100.0" />
+               </StackPane.margin>
+              </ScrollPane>
+            <ScrollPane fx:id="depthScroll" fitToHeight="true" fitToWidth="true" maxWidth="100.0" prefWidth="100.0" vbarPolicy="NEVER" StackPane.alignment="TOP_LEFT">
+               <content>
+                  <SplitPane>
+                     <items>
+                        <VBox nodeOrientation="LEFT_TO_RIGHT">
+                           <children>
+                              <Slider fx:id="depthSlider" blockIncrement="0.0" majorTickUnit="10.0" min="1.0" minorTickCount="1" showTickLabels="true" showTickMarks="true" snapToTicks="true" value="10.0" />
+                              <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Глубина" textAlignment="CENTER" VBox.vgrow="ALWAYS" />
+                              <AnchorPane fx:id="depthPane" maxWidth="100.0" minWidth="100.0" VBox.vgrow="ALWAYS" />
+                           </children>
+                        </VBox>
+                     </items>
+                  </SplitPane>
+               </content>
+            </ScrollPane>
+         </children>
+      </StackPane>
     </children>
 </AnchorPane>
