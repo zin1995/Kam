@@ -40,10 +40,8 @@ public class MainController {
                 new FileChooser.ExtensionFilter("All", "*.*"));
         chooser.setInitialDirectory(new File("D:\\Study\\Примеры для камертона"));
         File file = chooser.showOpenDialog(openFile.getParentPopup().getScene().getWindow());
-        try {
-            root.getChildren().remove(1);
-        } catch (Exception exception) {
-        }
+
+        if (root.getChildren().size() > 1) root.getChildren().remove(1);
 
         showContent(file);
     }
@@ -72,8 +70,8 @@ public class MainController {
         ArrayList<String[]> list = new ArrayList<>();
         HashMap<String, Double[]> map = new HashMap<>();
 
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             boolean flag = false;
             while (reader.ready()) {
                 String s = reader.readLine().trim();
@@ -84,28 +82,26 @@ public class MainController {
                     flag = true;
                 }
             }
-
-            int i = 0;
-            for (String s : getMethods(file)) {
-                map.put(s, new Double[list.size()]);
-                for (int j = 0; j < list.size(); j++) {
-                    map.get(s)[j] = Double.parseDouble(list.get(j)[i]);
-                }
-                i++;
-            }
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        ArrayList<String> methods = getMethods(file);
+        for (int i = 0; i < methods.size(); i++) {
+            String s = methods.get(i);
+            map.put(s, new Double[list.size()]);
+            for (int j = 0; j < list.size(); j++) {
+                map.get(s)[j] = Double.parseDouble(list.get(j)[i]);
+            }
+        }
+
         return map;
     }
 
     private ArrayList<String> getMethods(File file) {
         ArrayList<String> list = new ArrayList<>();
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
             boolean flag = false;
             while (reader.ready()) {
                 String s = reader.readLine().trim();
@@ -119,8 +115,6 @@ public class MainController {
                     flag = true;
                 }
             }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }

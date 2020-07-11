@@ -4,9 +4,11 @@ import java.util.HashMap;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -33,7 +35,6 @@ public class ContentController {
     private HashMap<String, MethodChart> chartMap = new HashMap<>();
     private Double[] depthData;
     private int depthMultiplier = 10;
-    private Double XPointDivider = 1.0;
 
     public void setDepthData(Double[] depthData) {
         this.depthData = depthData;
@@ -43,12 +44,20 @@ public class ContentController {
 
     @FXML
     public void initialize() {
+
         methodScroll.vvalueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
                 depthScroll.setVvalue(newValue.doubleValue());
             }
         });
+        depthScroll.vvalueProperty().addListener(new ChangeListener<Number>() {
+            @Override
+            public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                methodScroll.setVvalue(newValue.doubleValue());
+            }
+        });
+
         depthSlider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
@@ -63,21 +72,29 @@ public class ContentController {
 
     public void deletePanel(String s) {
         splitPane.getItems().remove(methodsPane.get(s)[0]);
+        double size = splitPane.getItems().size();
+        for(int i = 0; i < size; i++){
+            splitPane.setDividerPosition(i, 1/size);
+        }
     }
 
     public void restorePanel(String s) {
         splitPane.getItems().add(methodsPane.get(s)[0]);
+        double size = splitPane.getItems().size();
+        for(int i = 0; i < size; i++){
+            splitPane.setDividerPosition(i, 1/size);
+        }
     }
 
-    private void setSliderSettings(Slider slider, String methodName, AnchorPane anchorPane, MethodChart methodChart) {
+    private void setSliderSettings(Slider slider, String methodName, VBox vBox, MethodChart methodChart) {
         slider.setShowTickLabels(true);
         slider.setShowTickMarks(true);
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                XPointDivider = newValue.doubleValue();
-                chartMap.get(methodName).setXPointDivider(XPointDivider);
-                anchorPane.setMinWidth(methodChart.getWidth());
+                chartMap.get(methodName).setXPointDivider(newValue.doubleValue());
+                vBox.setMinWidth(methodChart.getWidth());
+                vBox.setMaxWidth(methodChart.getWidth());
                 drawContentsMethodPanel(methodName);
             }
         });
@@ -92,14 +109,16 @@ public class ContentController {
 
     public void addMethodPane(String methodName, Double[] methodData) {
         Node[] nodes = new Node[3];
-        MethodChart methodChart = new MethodChart(methodName, methodData, depthData, depthMultiplier, XPointDivider);
+        MethodChart methodChart = new MethodChart(methodName, methodData, depthData, depthMultiplier);
         chartMap.put(methodName, methodChart);
 
         VBox vBox = new VBox();
         AnchorPane canvas = new AnchorPane();
+        canvas.setMaxWidth(methodChart.getWidth());
+        canvas.setMinWidth(methodChart.getWidth());
 
         Slider slider = new Slider(1, 10, 1);
-        setSliderSettings(slider, methodName, canvas, methodChart);
+        setSliderSettings(slider, methodName, vBox, methodChart);
 
         Label label = new Label(methodName);
         setLabelSettings(label);
@@ -132,6 +151,7 @@ public class ContentController {
         depthPane.getChildren().clear();
         Double lowerDepth = depthData[0];
 
+
         for (int i = 0; i < depthData.length; i++) {
             Double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier;
 
@@ -152,7 +172,7 @@ public class ContentController {
                 if (depthMultiplier > 7) {
                     depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
                 }
-                if (i % 20 == 0 && depthMultiplier <= 7 && depthMultiplier>2)
+                if (i % 20 == 0 && depthMultiplier <= 7 && depthMultiplier > 2)
                     depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
                 if (i % 100 == 0 && depthMultiplier <= 2)
                     depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
