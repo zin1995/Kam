@@ -4,11 +4,9 @@ import java.util.HashMap;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
@@ -92,7 +90,7 @@ public class ContentController {
         slider.valueProperty().addListener(new ChangeListener<Number>() {
             @Override
             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
-                chartMap.get(methodName).setXPointDivider(newValue.doubleValue());
+                chartMap.get(methodName).setWidthMultiplier(newValue.doubleValue());
                 vBox.setMinWidth(methodChart.getWidth());
                 vBox.setMaxWidth(methodChart.getWidth());
                 drawContentsMethodPanel(methodName);

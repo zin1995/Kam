@@ -13,7 +13,7 @@ public class MethodChart {
     private Double[] methodData;
     private Double[] depthData;
     private int depthMultiplier;
-    private Double XPointDivider = 1.0;
+    private Double widthMultiplier = 1.0;
     private Color color = Color.BLACK;
 
     public MethodChart(String methodName, Double[] methodData, Double[] depthData, int depthMultiplier) {
@@ -31,23 +31,25 @@ public class MethodChart {
         this.depthMultiplier = depthMultiplier;
     }
 
-    public void setXPointDivider(Double XPointDivider) {
-        this.XPointDivider = XPointDivider;
+    public void setWidthMultiplier(Double widthMultiplier) {
+        this.widthMultiplier = widthMultiplier;
     }
 
     public void drawChart(AnchorPane anchorPane) {
         Double lowerDepth = depthData[0];
         Double minXValue = getMinXValue();
         Double maxXValue = getMaxXValue();
+        Double xDivider = (maxXValue - minXValue) / getWidth();
         if (minXValue == maxXValue) minXValue = 0.0;
-        Double lastXPoint = (methodData[0] - minXValue) / ((maxXValue - minXValue) / (150 * XPointDivider));
+
+        Double lastXPoint = (methodData[0] - minXValue) / xDivider;
         Double lastYPoint = 0.0;
 
-        drawMouseCoordinate(anchorPane, lowerDepth);
+        drawMouseCoordinate(anchorPane, lowerDepth, minXValue, xDivider);
 
         for (int i = 0; i < depthData.length; i++) {
             Double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier;
-            Double currentXPoint = (methodData[i] - minXValue) / ((maxXValue - minXValue) / (150 * XPointDivider));
+            Double currentXPoint = (methodData[i] - minXValue) / xDivider;
             if (currentXPoint < 0) currentXPoint = 0.0;
 
             if (i % 10 == 0) {
@@ -85,15 +87,17 @@ public class MethodChart {
     }
 
     public double getWidth() {
-        return 150 * XPointDivider;
+        return 150 * widthMultiplier;
     }
 
 
-    private void drawMouseCoordinate(AnchorPane anchorPane, double lowerDepth){
+    private void drawMouseCoordinate(AnchorPane anchorPane, double lowerDepth,double minXValue, double xDivider){
         anchorPane.setOnMouseExited(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 if (anchorPane.getChildren().get(anchorPane.getChildren().size() - 1) instanceof Text) {
+                    anchorPane.getChildren().remove(anchorPane.getChildren().size() - 1);
+                    anchorPane.getChildren().remove(anchorPane.getChildren().size() - 1);
                     anchorPane.getChildren().remove(anchorPane.getChildren().size() - 1);
                     anchorPane.getChildren().remove(anchorPane.getChildren().size() - 1);
                 }
@@ -107,9 +111,19 @@ public class MethodChart {
                     if (anchorPane.getChildren().get(anchorPane.getChildren().size() - 1) instanceof Text) {
                         anchorPane.getChildren().remove(anchorPane.getChildren().size() - 1);
                         anchorPane.getChildren().remove(anchorPane.getChildren().size() - 1);
+                        anchorPane.getChildren().remove(anchorPane.getChildren().size() - 1);
+                        anchorPane.getChildren().remove(anchorPane.getChildren().size() - 1);
                     }
+                    Line line1 = new Line(event.getX(), 0, event.getX(), event.getY());
+                    line1.setStrokeWidth(0.1);
+                    double xPoint = (methodData[(int)Math.round(event.getY()/depthMultiplier*10)] - minXValue) / xDivider;
+                    Line line2 = new Line(xPoint, event.getY(), event.getX(), event.getY());
+                    line2.setStrokeWidth(0.1);
+
+                    anchorPane.getChildren().add(line1);
+                    anchorPane.getChildren().add(line2);
                     anchorPane.getChildren().add(new Text(event.getX(), event.getY(), String.format("%.1f", event.getY() / depthMultiplier+lowerDepth)));
-                    anchorPane.getChildren().add(new Text(event.getX(), event.getY()-10, methodData[(int)Math.round(event.getY())]+""));
+                    anchorPane.getChildren().add(new Text(event.getX(), event.getY()-10, methodData[(int)Math.round(event.getY()/depthMultiplier*10)]+""));
                 }
             }
         });
