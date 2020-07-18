@@ -21,7 +21,7 @@
             <MenuItem mnemonicParsing="false" text="Quit" />
           </items>
         </Menu>
-        <Menu mnemonicParsing="false" text="Edit">
+        <Menu fx:id="editMenu" mnemonicParsing="false" text="Edit">
                <items>
                   <Menu fx:id="methodsMenu" mnemonicParsing="false" text="Methods" />
                </items>

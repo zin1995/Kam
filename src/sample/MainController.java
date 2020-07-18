@@ -1,7 +1,6 @@
 package sample;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Menu;
@@ -12,8 +11,6 @@ import javafx.stage.FileChooser;
 
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class MainController {
@@ -24,6 +21,8 @@ public class MainController {
     MenuItem openFile;
     @FXML
     Menu methodsMenu;
+    @FXML
+    Menu editMenu;
 
 
     @FXML
@@ -41,100 +40,68 @@ public class MainController {
         chooser.setInitialDirectory(new File("D:\\Study\\Примеры для камертона"));
         File file = chooser.showOpenDialog(openFile.getParentPopup().getScene().getWindow());
 
-        if (root.getChildren().size() > 1) root.getChildren().remove(1);
+        if (file != null) {
+            if (root.getChildren().size() > 1) root.getChildren().remove(1);
 
-        showContent(file);
+            addContent(file);
+        }
     }
 
-    private void showContent(File file) {
+    private void addContent(File file) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/content.fxml"));
             root.getChildren().add(loader.load());
             ContentController contentController = loader.getController();
 
-            HashMap<String, Double[]> data = getData(file);
-            contentController.setDepthData(data.get("DEPT"));
-            for (String s : getMethods(file)) {
-                if (s.equals("DEPT")) continue;
-                Double[] methodData = data.get(s);
-                contentController.addMethodPane(s, methodData);
-                updateMethodMenu(s, contentController);
-            }
+            LasParser lasParser = new LasParser(file);
+            contentController.setParser(lasParser);
+            updateMethodMenu(lasParser, contentController);
 
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
     }
 
-    private HashMap<String, Double[]> getData(File file) {
-        ArrayList<String[]> list = new ArrayList<>();
-        HashMap<String, Double[]> map = new HashMap<>();
-
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
-            boolean flag = false;
-            while (reader.ready()) {
-                String s = reader.readLine().trim();
-                if (flag) {
-                    list.add(s.split("\\s+"));
-                }
-                if (s.startsWith("~A")) {
-                    flag = true;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        ArrayList<String> methods = getMethods(file);
-        for (int i = 0; i < methods.size(); i++) {
-            String s = methods.get(i);
-            map.put(s, new Double[list.size()]);
-            for (int j = 0; j < list.size(); j++) {
-                map.get(s)[j] = Double.parseDouble(list.get(j)[i]);
-            }
-        }
-
-        return map;
-    }
-
-    private ArrayList<String> getMethods(File file) {
-        ArrayList<String> list = new ArrayList<>();
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
-            boolean flag = false;
-            while (reader.ready()) {
-                String s = reader.readLine().trim();
-                if (s.startsWith("#")) continue;
-                if (flag) {
-                    if (s.matches("^~[^C].+")) break;
-                    if (s.toLowerCase().matches("^dept.*")) s = "DEPT";
-                    list.add(s.split(":")[0].trim());
-                }
-                if (s.startsWith("~C")) {
-                    flag = true;
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return list;
-    }
-
-    @FXML
-    private void updateMethodMenu(String s, ContentController contentController) {
-        RadioMenuItem radioMenuItem = new RadioMenuItem(s.trim());
-        radioMenuItem.setSelected(true);
-        methodsMenu.getItems().add(radioMenuItem);
-
-        radioMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
+    private void updateMethodMenu(LasParser lasParser, ContentController contentController) {
+        for (String s : lasParser.getMethodsNames()) {
+            RadioMenuItem radioMenuItem = new RadioMenuItem(s.trim());
+            radioMenuItem.setSelected(true);
+            methodsMenu.getItems().add(radioMenuItem);
+            radioMenuItem.setOnAction(event -> {
                 if (radioMenuItem.isSelected()) {
                     contentController.restorePanel(s);
                 } else contentController.deletePanel(s);
+            });
+        }
+
+        if(lasParser.getStitchedMethodsData().size()>0){
+            Menu stitchedMethodsMenu = new Menu("Сшитые методы");
+            editMenu.getItems().add(1, stitchedMethodsMenu);
+            for (String s : lasParser.getStitchedMethodsData().keySet()) {
+                RadioMenuItem radioMenuItem = new RadioMenuItem(s.trim());
+                stitchedMethodsMenu.getItems().add(radioMenuItem);
+                radioMenuItem.setOnAction(event -> {
+                    if (radioMenuItem.isSelected()) {
+                        contentController.restorePanel(s);
+                    } else contentController.deletePanel(s);
+                });
             }
-        });
+        }
+
+
+
+
+//            if (s.equals("ПС  .мВ") || s.equals("ГК  .мкР\\час")) {
+//                RadioMenuItem rmi = new RadioMenuItem(s);
+//                lithologyMenu.getItems().add(rmi);
+//                rmi.setOnAction(event -> {
+//                    if (rmi.isSelected()) {
+//                        contentController.restoreLithologyPanel(s);
+//                    } else contentController.deleteLithologyPanel(s);
+//                });
+//            }
+
     }
+
 
 }
