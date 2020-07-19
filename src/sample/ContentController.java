@@ -1,20 +1,15 @@
 package sample;
 
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javafx.fxml.FXML;
-import javafx.geometry.Orientation;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
 
-import static javafx.geometry.Pos.CENTER;
 
 public class ContentController {
 
@@ -27,7 +22,8 @@ public class ContentController {
     @FXML
     ScrollPane depthScroll;
     @FXML
-    ScrollPane methodScroll;
+    ScrollBar vScroll;
+
 
 
     private LasParser lasParser;
@@ -50,8 +46,10 @@ public class ContentController {
 
     @FXML
     public void initialize() {
-        methodScroll.vvalueProperty().addListener((observable, oldValue, newValue) -> depthScroll.setVvalue(newValue.doubleValue()));
-        depthScroll.vvalueProperty().addListener((observable, oldValue, newValue) -> methodScroll.setVvalue(newValue.doubleValue()));
+        vScroll.setMax(depthScroll.getVmax());
+        vScroll.setMin(depthScroll.getVmin());
+        vScroll.valueProperty().addListener((observable, oldValue, newValue) -> depthScroll.setVvalue(newValue.doubleValue()));
+        depthScroll.vvalueProperty().addListener((observable, oldValue, newValue) -> vScroll.setValue(newValue.doubleValue()));
 
         depthSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             depthMultiplier = newValue.intValue();
@@ -83,7 +81,7 @@ public class ContentController {
         MethodChart methodChart = new MethodChart(methodName, methodData, lasParser.getDeptData(), lasParser.getDeptStep());
         chartMap.put(methodName, methodChart);
 
-        MethodsVBox methodsVBox = new MethodsVBox(methodName, methodChart);
+        MethodsVBox methodsVBox = new MethodsVBox(methodName, methodChart, vScroll);
 
         methodsPane.put(methodName, methodsVBox);
     }
@@ -99,7 +97,7 @@ public class ContentController {
         double lowerDepth = depthData[0];
 
         for (int i = 0; i < depthData.length; i++) {
-            double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier;
+            double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier+10;
 
             Line line = new Line(0, currentYPoint, 2, currentYPoint);
             line.setStrokeWidth(0.4);
@@ -115,12 +113,12 @@ public class ContentController {
                 line2.setStrokeWidth(0.1);
                 depthPane.getChildren().add(line2);
                 if (depthMultiplier > 7) {
-                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
+                    depthPane.getChildren().add(new Text(10, currentYPoint+5, depthData[i] + ""));
                 }
                 if (i % 20 == 0 && depthMultiplier <= 7 && depthMultiplier > 2)
-                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
+                    depthPane.getChildren().add(new Text(10, currentYPoint+5, depthData[i] + ""));
                 if (i % 100 == 0 && depthMultiplier <= 2)
-                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
+                    depthPane.getChildren().add(new Text(10, currentYPoint+5, depthData[i] + ""));
             }
         }
     }

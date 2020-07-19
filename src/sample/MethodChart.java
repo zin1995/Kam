@@ -83,7 +83,7 @@ public class MethodChart {
     }
 
     public double getWidth() {
-        return 150 * widthMultiplier+20;
+        return 150 * widthMultiplier + 20;
     }
 
 
@@ -96,19 +96,20 @@ public class MethodChart {
         });
 
         anchorPane.setOnMouseMoved(event -> {
-            if (event.getY() / depthMultiplier > 0) {
-                if (anchorPane.getChildren().get(anchorPane.getChildren().size() - 1) instanceof Text) {
-                    anchorPane.getChildren().remove(anchorPane.getChildren().size() - 4, anchorPane.getChildren().size());
-                }
+            if (anchorPane.getChildren().get(anchorPane.getChildren().size() - 1) instanceof Text) {
+                anchorPane.getChildren().remove(anchorPane.getChildren().size() - 4, anchorPane.getChildren().size());
+            }
+
+            if (event.getY() / depthMultiplier > 0 && event.getY() / depthMultiplier * deptIncrement < depthData.length - 1) {
                 Line line1 = new Line(event.getX(), 0, event.getX(), event.getY());
                 line1.setStrokeWidth(0.1);
-                double xPoint = (methodData[(int) Math.round(event.getY() / depthMultiplier * deptIncrement)] - minXValue) / xDivider;
+                double xPoint = (methodData[(int) Math.round(event.getY() / depthMultiplier * deptIncrement)] - minXValue) / xDivider + 10;
                 Line line2 = new Line(xPoint, event.getY(), event.getX(), event.getY());
                 line2.setStrokeWidth(0.1);
 
                 anchorPane.getChildren().add(line1);
                 anchorPane.getChildren().add(line2);
-                anchorPane.getChildren().add(new Text(event.getX(), event.getY(), String.format("%.1f", event.getY() / depthMultiplier + lowerDepth)));
+                anchorPane.getChildren().add(new Text(event.getX(), event.getY() - 1, String.format("%.1f", event.getY() / depthMultiplier + lowerDepth)));
                 anchorPane.getChildren().add(new Text(event.getX(), event.getY() - 10, methodData[(int) Math.round(event.getY() / depthMultiplier * deptIncrement)] + ""));
             }
         });
