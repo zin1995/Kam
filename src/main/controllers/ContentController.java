@@ -1,14 +1,18 @@
-package sample;
+package main.controllers;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
+import main.LasParser;
+import main.MethodChart;
+import main.MethodsVBox;
 
 
 public class ContentController {
@@ -31,6 +35,7 @@ public class ContentController {
     private HashMap<String, MethodChart> chartMap = new HashMap<>();
     private int depthMultiplier = 10;
 
+
     public void setParser(LasParser lasParser) {
         this.lasParser = lasParser;
         for (Map.Entry<String, double[]> pair : lasParser.getMethodsData().entrySet()) {
@@ -43,6 +48,9 @@ public class ContentController {
         drawAllPanelsContent();
     }
 
+    public HashMap<String, MethodChart> getChartMap() {
+        return chartMap;
+    }
 
     @FXML
     public void initialize() {
@@ -62,27 +70,18 @@ public class ContentController {
 
     public void deletePanel(String s) {
         splitPane.getItems().remove(methodsPane.get(s));
-        double size = splitPane.getItems().size();
-        for (int i = 0; i < size; i++) {
-            splitPane.setDividerPosition(i, 1 / size);
-        }
     }
 
     public void restorePanel(String s) {
         splitPane.getItems().add(methodsPane.get(s));
         methodsPane.get(s).update();
-        double size = splitPane.getItems().size();
-        for (int i = 0; i < size; i++) {
-            splitPane.setDividerPosition(i, 1 / size);
-        }
     }
 
     private void addMethodPane(String methodName, double[] methodData) {
         MethodChart methodChart = new MethodChart(methodName, methodData, lasParser.getDeptData(), lasParser.getDeptStep());
         chartMap.put(methodName, methodChart);
 
-        MethodsVBox methodsVBox = new MethodsVBox(methodName, methodChart, vScroll);
-
+        MethodsVBox methodsVBox = new MethodsVBox(methodChart, vScroll, this);
         methodsPane.put(methodName, methodsVBox);
     }
 
@@ -113,12 +112,12 @@ public class ContentController {
                 line2.setStrokeWidth(0.1);
                 depthPane.getChildren().add(line2);
                 if (depthMultiplier > 7) {
-                    depthPane.getChildren().add(new Text(10, currentYPoint+5, depthData[i] + ""));
+                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
                 }
                 if (i % 20 == 0 && depthMultiplier <= 7 && depthMultiplier > 2)
-                    depthPane.getChildren().add(new Text(10, currentYPoint+5, depthData[i] + ""));
+                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
                 if (i % 100 == 0 && depthMultiplier <= 2)
-                    depthPane.getChildren().add(new Text(10, currentYPoint+5, depthData[i] + ""));
+                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
             }
         }
     }

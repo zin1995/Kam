@@ -1,4 +1,4 @@
-package sample;
+package main.controllers;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -8,6 +8,7 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import main.LasParser;
 
 
 import java.io.*;
@@ -49,7 +50,7 @@ public class MainController {
 
     private void addContent(File file) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("resources/content.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/content.fxml"));
             root.getChildren().add(loader.load());
             ContentController contentController = loader.getController();
 

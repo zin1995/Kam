@@ -1,6 +1,5 @@
-package sample;
+package main;
 
-import javafx.scene.control.SplitPane;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -23,6 +22,10 @@ public class MethodChart {
         this.deptIncrement = 1 / deptStep;
     }
 
+    public Color getColor() {
+        return color;
+    }
+
     public void setColor(Color color) {
         this.color = color;
     }
@@ -36,7 +39,6 @@ public class MethodChart {
     }
 
     public void drawChart(AnchorPane anchorPane) {
-        anchorPane.getChildren().clear();
         double lowerDepth = depthData[0];
         double minXValue = getMinXValue();
         double maxXValue = getMaxXValue();
@@ -46,11 +48,10 @@ public class MethodChart {
         drawMouseCoordinate(anchorPane, lowerDepth, minXValue, xDivider);
 
         double lastXPoint = (methodData[0] - minXValue) / xDivider + 10;
-        double lastYPoint = 0.0;
+        double lastYPoint = (depthData[0] - lowerDepth) * depthMultiplier;
         for (int i = 0; i < depthData.length; i++) {
             double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier;
             double currentXPoint = (methodData[i] - minXValue) / xDivider + 10;
-            if (currentXPoint < 0) currentXPoint = 0.0;
 
             if (i % 10 == 0) {
                 Line line = new Line(0, currentYPoint, getWidth(), currentYPoint);
@@ -58,7 +59,10 @@ public class MethodChart {
                 anchorPane.getChildren().add(line);
             }
 
-            anchorPane.getChildren().add(new Line(lastXPoint, lastYPoint, currentXPoint, currentYPoint));
+            Line line = new Line(lastXPoint, lastYPoint, currentXPoint, currentYPoint);
+            line.setFill(color);
+            line.setStroke(color);
+            anchorPane.getChildren().add(line);
             lastXPoint = currentXPoint;
             lastYPoint = currentYPoint;
         }
@@ -88,7 +92,6 @@ public class MethodChart {
 
 
     private void drawMouseCoordinate(AnchorPane anchorPane, double lowerDepth, double minXValue, double xDivider) {
-
         anchorPane.setOnMouseExited(event -> {
             if (anchorPane.getChildren().get(anchorPane.getChildren().size() - 1) instanceof Text) {
                 anchorPane.getChildren().remove(anchorPane.getChildren().size() - 4, anchorPane.getChildren().size());
@@ -115,7 +118,12 @@ public class MethodChart {
         });
     }
 
-//    public void drawLithology(SplitPane splitPane){
+    @Override
+    public String toString() {
+        return methodName;
+    }
+
+    //    public void drawLithology(SplitPane splitPane){
 //        double lev1 = 580.0;
 //        double lev2 = 4.0;
 //        double lev3 = 12.0;

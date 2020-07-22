@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.ScrollBar?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Slider?>
@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.ContentController">
+<AnchorPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="main.controllers.ContentController">
    <children>
       <HBox layoutX="10.0" layoutY="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -19,26 +19,26 @@
                <children>
                   <ScrollPane fitToHeight="true" fitToWidth="true" hbarPolicy="ALWAYS">
                      <StackPane.margin>
-                        <Insets left="70.0" right="14.0" />
+                        <Insets left="71.0" right="14.0" top="-1.0" />
                      </StackPane.margin>
                      <content>
-                        <SplitPane fx:id="splitPane" nodeOrientation="LEFT_TO_RIGHT" />
+                        <SplitPane fx:id="splitPane" nodeOrientation="LEFT_TO_RIGHT" style="-fx-background-insets: 0;">
+                           <padding>
+                              <Insets bottom="-1.0" />
+                           </padding></SplitPane>
                      </content>
-                     <padding>
-                        <Insets top="-1.0" />
-                     </padding>
                   </ScrollPane>
                   <VBox maxWidth="70.0" minWidth="70.0" nodeOrientation="LEFT_TO_RIGHT">
                      <children>
-                        <Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Глубина" textAlignment="CENTER" VBox.vgrow="ALWAYS" />
+                        <ComboBox prefWidth="150.0" promptText="Глубина" />
                         <Slider fx:id="depthSlider" blockIncrement="0.0" majorTickUnit="10.0" min="1.0" minorTickCount="1" snapToTicks="true" value="10.0" />
-                        <ScrollPane fx:id="depthScroll" fitToHeight="true" fitToWidth="true" hbarPolicy="ALWAYS" style="-fx-background-insets: 0;" vbarPolicy="NEVER">
-                           <content>
-                              <AnchorPane fx:id="depthPane" maxWidth="70.0" minWidth="70.0" />
-                           </content>
+                        <ScrollPane fx:id="depthScroll" fitToHeight="true" fitToWidth="true" hbarPolicy="ALWAYS" style="-fx-background-insets: 0;" vbarPolicy="NEVER" VBox.vgrow="ALWAYS">
                            <VBox.margin>
                               <Insets />
                            </VBox.margin>
+                           <content>
+                              <AnchorPane fx:id="depthPane" maxWidth="70.0" minWidth="70.0" style="-fx-background-insets: 0;" />
+                           </content>
                         </ScrollPane>
                      </children>
                   </VBox>
