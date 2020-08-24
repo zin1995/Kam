@@ -1,10 +1,11 @@
-package main;
+package main.updatable;
 
-import main.controllers.AddingStageController;
+import javafx.collections.ListChangeListener;
+import javafx.stage.Modality;
+import main.ContentAnchor.MethodChart;
+import main.controllers.CombiningChartsController;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -15,45 +16,30 @@ import javafx.stage.Stage;
 import main.controllers.ContentController;
 
 import java.io.IOException;
-
 import static javafx.scene.layout.HBox.setHgrow;
 
 
-public class MethodsVBox extends VBox {
+public class MethodsVBox extends VBox implements Updatable {
     private HBox hBox = new HBox();
-    private Button button = new Button("1");
+    private Button button = new Button("+");
     private ColorPicker colorPicker = new ColorPicker(Color.BLACK);
-    private Slider slider = new Slider(1, 5, 1);
     private ComboBox<MethodChart> comboBox = new ComboBox<>();
+    private Slider slider = new Slider(1, 5, 1);
     private AnchorPane canvas = new AnchorPane();
     private ScrollPane scrollPane = new ScrollPane();
-    ContentController contentController;
+    private ContentController contentController;
 
-    public MethodsVBox(MethodChart methodChart, ScrollBar vScroll, ContentController contentController) {
+    public MethodsVBox(MethodChart methodChart, ContentController contentController) {
         this.contentController = contentController;
-        comboBox.getItems().add(methodChart);
-        comboBox.setValue(methodChart);
-        methodChart.setColor(colorPicker.getValue());
 
-        setCanvasSettings();
-        setSliderSettings(slider);
-        setScrollSettings(vScroll);
-        setComboBoxSettings(comboBox);
+        setHBoxSettings();
+        setButtonSettings();
+        setComboBoxSettings(methodChart);
         setColorPickerSettings();
-        setButtonSettings(button);
+        setCanvasSettings();
+        setSliderSettings();
 
-        setMinWidth(methodChart.getWidth());
-        setMaxWidth(methodChart.getWidth());
-        setVgrow(comboBox, Priority.ALWAYS);
-        setVgrow(canvas, Priority.ALWAYS);
-        setVgrow(scrollPane, Priority.ALWAYS);
-        setHgrow(comboBox, Priority.ALWAYS);
-        setMargin(scrollPane, new Insets(10, 0, 0, 0));
-
-
-        hBox.getChildren().add(button);
-        hBox.getChildren().add(colorPicker);
-        hBox.getChildren().add(comboBox);
+        setScrollSettings(contentController.getVScroll());
 
 
         getChildren().add(hBox);
@@ -61,23 +47,23 @@ public class MethodsVBox extends VBox {
         getChildren().add(scrollPane);
     }
 
-    public void addMethodChart(MethodChart methodChart){
-        comboBox.getItems().add(methodChart);
-        update();
+    private void setHBoxSettings(){
+        hBox.getChildren().add(button);
+        hBox.getChildren().add(colorPicker);
+        hBox.getChildren().add(comboBox);
     }
 
-    private void setButtonSettings(Button button){
-        button.setMaxWidth(20);
+
+    private void setButtonSettings(){
+        button.setMinWidth(24);
         button.setOnAction(event -> {
-            Stage stage = new Stage();
-            Parent root;
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/addingStage.fxml"));
-                root = loader.load();
-                stage.setScene(new Scene(root, 300, 300));
-                AddingStageController addingStageController = loader.getController();
-                addingStageController.setComboBox(comboBox);
-                addingStageController.setMap(contentController.getChartMap());
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/combiningCharts.fxml"));
+                Stage stage = loader.load();
+                CombiningChartsController combiningChartsController = loader.getController();
+                combiningChartsController.setComboBox(comboBox);
+                combiningChartsController.setMap(contentController.getChartMap());
+                stage.initModality(Modality.APPLICATION_MODAL);
                 stage.show();
             } catch (IOException e) {
                 e.printStackTrace();
@@ -94,8 +80,13 @@ public class MethodsVBox extends VBox {
         });
     }
 
-    private void setComboBoxSettings(ComboBox<MethodChart> comboBox) {
+    private void setComboBoxSettings(MethodChart methodChart) {
+        comboBox.getItems().add(methodChart);
+        comboBox.setValue(methodChart);
+        setVgrow(comboBox, Priority.ALWAYS);
+        setHgrow(comboBox, Priority.ALWAYS);
         comboBox.setMaxWidth(Double.MAX_VALUE);
+        comboBox.getItems().addListener((ListChangeListener<MethodChart>) c -> update());
         comboBox.setOnAction(event -> {
             update();
             colorPicker.setValue(comboBox.getValue().getColor());
@@ -103,10 +94,11 @@ public class MethodsVBox extends VBox {
     }
 
     private void setCanvasSettings() {
+        setVgrow(canvas, Priority.ALWAYS);
         canvas.setStyle("-fx-background-insets: 0");
     }
 
-    private void setSliderSettings(Slider slider) {
+    private void setSliderSettings() {
         slider.valueProperty().addListener((observable, oldValue, newValue) -> {
             comboBox.getValue().setWidthMultiplier(newValue.doubleValue());
             setMinWidth(comboBox.getValue().getWidth());
@@ -118,6 +110,8 @@ public class MethodsVBox extends VBox {
     }
 
     private void setScrollSettings(ScrollBar vScroll) {
+        setVgrow(scrollPane, Priority.ALWAYS);
+        setMargin(scrollPane, new Insets(10, 0, 0, 0));
         scrollPane.setMinWidth(comboBox.getValue().getWidth());
         scrollPane.setMaxWidth(comboBox.getValue().getWidth());
         scrollPane.setFitToHeight(true);
@@ -131,7 +125,6 @@ public class MethodsVBox extends VBox {
         scrollPane.vvalueProperty().addListener((observable, oldValue, newValue) -> vScroll.setValue(newValue.doubleValue()));
         vScroll.valueProperty().addListener((observable, oldValue, newValue) -> scrollPane.setVvalue(newValue.doubleValue()));
     }
-
 
 
     public void update() {

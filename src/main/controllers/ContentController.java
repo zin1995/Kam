@@ -1,5 +1,7 @@
 package main.controllers;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,9 +12,13 @@ import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.shape.Line;
 import javafx.scene.text.Text;
-import main.LasParser;
-import main.MethodChart;
-import main.MethodsVBox;
+import javafx.stage.Stage;
+import main.*;
+import main.ContentAnchor.Lithology;
+import main.ContentAnchor.MethodChart;
+import main.updatable.LithologyVBox;
+import main.updatable.MethodsVBox;
+import main.updatable.Updatable;
 
 
 public class ContentController {
@@ -27,13 +33,16 @@ public class ContentController {
     ScrollPane depthScroll;
     @FXML
     ScrollBar vScroll;
-
+    @FXML
+    Button lithology;
 
 
     private LasParser lasParser;
     private HashMap<String, MethodsVBox> methodsPane = new HashMap<>();
+    private HashMap<String, LithologyVBox> lithologyPane = new HashMap<>();
+    private ArrayList<Lithology> lithologyList = new ArrayList<>();
     private HashMap<String, MethodChart> chartMap = new HashMap<>();
-    private int depthMultiplier = 10;
+    private int depthMultiplier = 2;
 
 
     public void setParser(LasParser lasParser) {
@@ -42,7 +51,7 @@ public class ContentController {
             addMethodPane(pair.getKey(), pair.getValue());
             showMethodPane(pair.getKey());
         }
-        for(Map.Entry<String, double[]> pair : lasParser.getStitchedMethodsData().entrySet()){
+        for (Map.Entry<String, double[]> pair : lasParser.getStitchedMethodsData().entrySet()) {
             addMethodPane(pair.getKey(), pair.getValue());
         }
         drawAllPanelsContent();
@@ -52,17 +61,39 @@ public class ContentController {
         return chartMap;
     }
 
+    public ScrollBar getVScroll() {
+        return vScroll;
+    }
+
     @FXML
     public void initialize() {
+        lithology.setOnAction(event -> {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/createLithology.fxml"));
+            try {
+                Stage stage = loader.load();
+                stage.show();
+                LithologyController lithologyController = loader.getController();
+                lithologyController.setContentController(this);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
         vScroll.setMax(depthScroll.getVmax());
         vScroll.setMin(depthScroll.getVmin());
-        vScroll.valueProperty().addListener((observable, oldValue, newValue) -> depthScroll.setVvalue(newValue.doubleValue()));
+        vScroll.valueProperty().addListener((observable, oldValue, newValue) -> {
+            depthScroll.setVvalue(newValue.doubleValue());
+        });
         depthScroll.vvalueProperty().addListener((observable, oldValue, newValue) -> vScroll.setValue(newValue.doubleValue()));
 
         depthSlider.valueProperty().addListener((observable, oldValue, newValue) -> {
             depthMultiplier = newValue.intValue();
             for (MethodChart methodChart : chartMap.values()) {
                 methodChart.setDepthMultiplier(depthMultiplier);
+            }
+
+            for(Lithology lithology: lithologyList){
+                lithology.setDepthMultiplier(depthMultiplier);
             }
             drawAllPanelsContent();
         });
@@ -77,15 +108,21 @@ public class ContentController {
         methodsPane.get(s).update();
     }
 
+    public void addLithologyPane(String lithologyName, Lithology lithology){
+        LithologyVBox lithologyVBox = new LithologyVBox(lithology, vScroll);
+        lithologyList.add(lithology);
+        splitPane.getItems().add(lithologyVBox);
+    }
+
     private void addMethodPane(String methodName, double[] methodData) {
-        MethodChart methodChart = new MethodChart(methodName, methodData, lasParser.getDeptData(), lasParser.getDeptStep());
+        MethodChart methodChart = new MethodChart(methodName, methodData, lasParser.getDeptData());
         chartMap.put(methodName, methodChart);
 
-        MethodsVBox methodsVBox = new MethodsVBox(methodChart, vScroll, this);
+        MethodsVBox methodsVBox = new MethodsVBox(methodChart, this);
         methodsPane.put(methodName, methodsVBox);
     }
 
-    private void showMethodPane(String methodName){
+    private void showMethodPane(String methodName) {
         splitPane.getItems().add(methodsPane.get(methodName));
     }
 
@@ -93,30 +130,23 @@ public class ContentController {
     private void drawContentsDepthPanel() {
         depthPane.getChildren().clear();
         double[] depthData = lasParser.getDeptData();
-        double lowerDepth = depthData[0];
 
         for (int i = 0; i < depthData.length; i++) {
-            double currentYPoint = (depthData[i] - lowerDepth) * depthMultiplier+10;
+            double currentYPoint = i * depthMultiplier + 10;
 
             Line line = new Line(0, currentYPoint, 2, currentYPoint);
             line.setStrokeWidth(0.4);
             depthPane.getChildren().add(line);
 
-            if (i % 5 == 0 && i % 10 != 0) {
-                depthPane.getChildren().add(new Line(0, currentYPoint, 5, currentYPoint));
-            }
-
-            if (i % 10 == 0) {
+            if (i % 5 == 0) {
                 depthPane.getChildren().add(new Line(0, currentYPoint, 10, currentYPoint));
                 Line line2 = new Line(0, currentYPoint, depthPane.getMaxWidth(), currentYPoint);
                 line2.setStrokeWidth(0.1);
                 depthPane.getChildren().add(line2);
-                if (depthMultiplier > 7) {
+                if (depthMultiplier >=2) {
                     depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
                 }
-                if (i % 20 == 0 && depthMultiplier <= 7 && depthMultiplier > 2)
-                    depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
-                if (i % 100 == 0 && depthMultiplier <= 2)
+                if (i % 10 == 0 && depthMultiplier<2)
                     depthPane.getChildren().add(new Text(10, currentYPoint, depthData[i] + ""));
             }
         }
@@ -126,42 +156,7 @@ public class ContentController {
     private void drawAllPanelsContent() {
         drawContentsDepthPanel();
         for (Node node : splitPane.getItems()) {
-            ((MethodsVBox) node).update();
+            ((Updatable) node).update();
         }
     }
-
-
-
-    //    public void deleteLithologyPanel(String s) {
-//        splitPane.getItems().remove(methodsPane.get("Литология " + s));
-//        double size = splitPane.getItems().size();
-//        for (int i = 0; i < size; i++) {
-//            splitPane.setDividerPosition(i, 1 / size);
-//        }
-//    }
-//
-//    public void restoreLithologyPanel(String s) {
-//        double size = splitPane.getItems().size();
-//        int j = 0;
-//        for (int i = 0; i < size; i++) {
-//            splitPane.setDividerPosition(i, 1 / size);
-//            if (splitPane.getItems().get(i).equals(methodsPane.get(s))) j = i + 1;
-//        }
-//        splitPane.getItems().add(j, methodsPane.get("Литология " + s));
-//    }
-
-
-//    @FXML
-//    private void drawLithology(String s) {
-//        VBox vBox = new VBox();
-//        SplitPane splitPane1 = new SplitPane();
-//        splitPane1.setOrientation(Orientation.VERTICAL);
-//        Label label = new Label("Литология " + s);
-//        label.setMinHeight(45);
-//        splitPane1.getItems().add(label);
-//        vBox.getChildren().add(splitPane1);
-//        chartMap.get(s).drawLithology(splitPane1);
-//        methodsPane.put("Литология " + s, vBox);
-//    }
-
 }

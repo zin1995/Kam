@@ -10,7 +10,8 @@ public class LasParser {
     private boolean wrap;
     private double deptStep;
     private double[] deptData;
-    private ArrayList<String> methodsNames = new ArrayList<>();
+    private ArrayList<String> fullMethodsNames = new ArrayList<>();
+    private ArrayList<String> methodName = new ArrayList<>();
     private LinkedHashMap<String, double[]> methodsData = new LinkedHashMap<>();
     private HashMap<String, double[]> stitchedMethodsData = new HashMap<>();
 
@@ -22,8 +23,8 @@ public class LasParser {
         return methodsData;
     }
 
-    public ArrayList<String> getMethodsNames() {
-        return methodsNames;
+    public ArrayList<String> getFullMethodsNames() {
+        return fullMethodsNames;
     }
 
     public HashMap<String, double[]> getStitchedMethodsData() {
@@ -89,7 +90,8 @@ public class LasParser {
             if (s.startsWith("#")) continue;
             if (s.matches("^~.+")) break;
             if (s.toLowerCase().matches("^dept.*")) continue;
-            methodsNames.add(s.split(":")[0].trim());
+            fullMethodsNames.add(s.split(":")[0].trim());
+            methodName.add(s.split("\\.")[0].trim());
         }
         return s;
     }
@@ -106,8 +108,8 @@ public class LasParser {
         }
 
         deptData = new double[list.size()];
-        for (int i = 0; i < methodsNames.size(); i++) {
-            String s = methodsNames.get(i);
+        for (int i = 0; i < fullMethodsNames.size(); i++) {
+            String s = fullMethodsNames.get(i);
             methodsData.put(s, new double[list.size()]);
             for (int j = 0; j < list.size(); j++) {
                 deptData[j] = Double.parseDouble(list.get(j)[0]);
@@ -123,7 +125,7 @@ public class LasParser {
                 if (s2.startsWith(ss) && !s2.equals(s)) {
                     double[] d = methodsData.get(s);
                     double[] d2 = methodsData.get(s2);
-                    String stitchedMethodName = s + "+" + s2;
+                    String stitchedMethodName = s + " + " + s2;
                     stitchedMethodsData.put(stitchedMethodName, new double[d.length]);
                     for (int i = 0; i < d.length; i++) {
                         if (d[i] < 0 & d2[i] > 0) {
@@ -134,6 +136,4 @@ public class LasParser {
             }
         }
     }
-
-
 }

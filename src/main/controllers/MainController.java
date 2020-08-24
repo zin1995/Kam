@@ -3,11 +3,15 @@ package main.controllers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.RadioMenuItem;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import main.LasParser;
 
 
@@ -24,7 +28,6 @@ public class MainController {
     Menu methodsMenu;
     @FXML
     Menu editMenu;
-
 
     @FXML
     public void initialize() {
@@ -64,7 +67,7 @@ public class MainController {
     }
 
     private void updateMethodMenu(LasParser lasParser, ContentController contentController) {
-        for (String s : lasParser.getMethodsNames()) {
+        for (String s : lasParser.getFullMethodsNames()) {
             RadioMenuItem radioMenuItem = new RadioMenuItem(s.trim());
             radioMenuItem.setSelected(true);
             methodsMenu.getItems().add(radioMenuItem);
@@ -75,7 +78,7 @@ public class MainController {
             });
         }
 
-        if(lasParser.getStitchedMethodsData().size()>0){
+        if (lasParser.getStitchedMethodsData().size() > 0) {
             Menu stitchedMethodsMenu = new Menu("Ñøèòûå ìåòîäû");
             editMenu.getItems().add(1, stitchedMethodsMenu);
             for (String s : lasParser.getStitchedMethodsData().keySet()) {
@@ -88,21 +91,6 @@ public class MainController {
                 });
             }
         }
-
-
-
-
-//            if (s.equals("ÏÑ  .ìÂ") || s.equals("ÃÊ  .ìêÐ\\÷àñ")) {
-//                RadioMenuItem rmi = new RadioMenuItem(s);
-//                lithologyMenu.getItems().add(rmi);
-//                rmi.setOnAction(event -> {
-//                    if (rmi.isSelected()) {
-//                        contentController.restoreLithologyPanel(s);
-//                    } else contentController.deleteLithologyPanel(s);
-//                });
-//            }
-
     }
-
 
 }
